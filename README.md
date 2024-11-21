@@ -5,7 +5,7 @@ Si ya tienes Git usa los siguientes comandos
 ## Instalación
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/NelRondon01/RuletaAmericana-Proyecto
+   git clone https://github.com/nelrondon/RULETA-AMERICANA-PROYECTO-UDO
    ```
 2. Install Pygame:
    ```bash
