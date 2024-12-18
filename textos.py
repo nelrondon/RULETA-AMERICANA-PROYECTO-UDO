@@ -1,9 +1,9 @@
 import pygame
 
 class Texto:
-    def __init__(self, msg, display, color="black", fs=18):
+    def __init__(self, msg, display, color="black", fs=15):
         self.msg = msg
-        self.fuente = pygame.font.Font("proyecto/fonts/GeneralSans-Regular.ttf", fs)
+        self.fuente = pygame.font.Font("fonts/GeneralSans-Regular.ttf", fs)
         self.color = color
         self.display = display
     

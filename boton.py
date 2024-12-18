@@ -30,7 +30,7 @@ class Boton:
         
 
 
-    def dibujar(self, pantalla):
+    def dibujar(self, pantalla:pygame.Surface):
         # Cambiar color si el mouse está sobre el botón
         mouse_pos = pygame.mouse.get_pos()
         color_actual = self.color_hover if self.rect.collidepoint(mouse_pos) else self.color_normal
@@ -53,7 +53,7 @@ class Boton:
                       (self.rect.x + (self.rect.width - texto_renderizado.get_width()) // 2,
                        self.rect.y + (self.rect.height - texto_renderizado.get_height()) // 2))
     
-    def isclick(self, event):
+    def isClick(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
             if self.rect.collidepoint(event.pos):
                 if self.type == "selection":
@@ -64,19 +64,15 @@ class Boton:
 class ListaBotones: 
     def __init__(self, type=None):
         self.type = type
-        self.botones = []
+        self.botones:list[Boton] = [] 
 
     def get(self):
         return self.botones
     
-    def add(self, btn):
-        if type(btn)==list:
-            for x in btn:
-                self.add(x)
-        else:
-            if not self.type==None:
-                btn.type = self.type
-            self.botones.append(btn)
+    def add(self, btn:Boton):
+        if not self.type==None:
+            btn.type = self.type
+        self.botones.append(btn)
     
     def dibujar(self, pantalla):
         for b in self.botones:
@@ -92,16 +88,16 @@ class ListaBotonesSelect(ListaBotones):
 
     def get_selects(self):
         sel = []
-        for a in self.botones:
-            if a.select:
-                sel.append(a.value)
+        for b in self.botones:
+            if b.select:
+                sel.append(b.value)
         return sel
     
 class ListaBotonesOpcion(ListaBotones):
     def __init__(self):
         super().__init__("opcion")
     
-    def opcion(self, index):
+    def get_opcion(self, index):
         for btn in self.botones:
             if btn == self.botones[index]:
                 btn.select = True
@@ -109,7 +105,3 @@ class ListaBotonesOpcion(ListaBotones):
                 btn.select = False
         return str(self.botones[index].value).lower()
 
-# lst = ListaBotonesSelect()
-# lst1 = ListaBotones()
-
-# print(lst.botones)
