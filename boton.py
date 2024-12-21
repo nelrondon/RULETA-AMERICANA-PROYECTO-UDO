@@ -1,8 +1,9 @@
 import pygame
+from constantes import *
 
 # Clase Boton
 class Boton:
-    def __init__(self, x, y, ancho, alto, texto, color=(200, 200, 200), fs=16, color_txt="black", hover=True, value=None, type=None):
+    def __init__(self, x, y, ancho, alto, texto, color=GRIS, fs=16, color_txt="black", hover=True, value=None, type=None):
         # ATRIBUTOS ESCENCIALES
         self.texto = str(texto)
         if type=="bool":
@@ -19,7 +20,7 @@ class Boton:
 
         # COLORES
         self.color_texto = color_txt
-        self.color_normal = color
+        self.color_normal = GRIS if color==None else color
         ajustar_brillo = lambda clr, factor: tuple(min(255, int(c * factor)) for c in clr)
         self.color_hover = ajustar_brillo(self.color_normal, 0.7)
 
@@ -56,35 +57,45 @@ class Boton:
     def isClick(self, event):
         if event.type == pygame.MOUSEBUTTONUP:
             if self.rect.collidepoint(event.pos):
-                if self.type == "selection":
-                    self.select = False if self.select else True
                 return True
         return False
     
 class ListaBotones: 
     def __init__(self, type=None):
         self.type = type
-        self.botones:list[Boton] = [] 
+        self.botones:list[Boton] = []
+
+    def __len__(self):
+        return len(self.botones)
+
+    def __getitem__(self, indice):
+        return self.botones[indice]
 
     def get(self):
         return self.botones
     
     def add(self, btn:Boton):
-        if not self.type==None:
-            btn.type = self.type
-        self.botones.append(btn)
+        if type(btn) == list:
+            for b in btn:
+                self.add(b)
+        else:
+            if not self.type==None:
+                if btn.type != "btn":
+                    btn.type = self.type
+            self.botones.append(btn)
     
     def dibujar(self, pantalla):
         for b in self.botones:
             b.dibujar(pantalla)
 
     def default(self):
-        for btn in self.botones:
-            btn.select = False
+        pass
 
 class ListaBotonesSelect(ListaBotones):
-    def __init__(self):
+    def __init__(self, maxSelected=0):
         super().__init__("selection")
+        self.maxSelect = maxSelected
+        self.selectes = 0
 
     def get_selects(self):
         sel = []
@@ -93,15 +104,52 @@ class ListaBotonesSelect(ListaBotones):
                 sel.append(b.value)
         return sel
     
+    def countSelected(self):
+        self.selectes = len(list(filter(lambda btn: btn.select, self.botones)))
+        return self.selectes
+
+    def isClick(self, event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            for btn in self.botones:
+                if btn.borde.collidepoint(event.pos):
+                    self.countSelected()
+                    if not self.maxSelect or self.selectes < self.maxSelect:
+                        btn.select = not btn.select
+                    else:
+                        btn.select = False
+                    self.countSelected()
+                    return True
+    
+    def default(self):
+        for btn in self.botones:
+            btn.select = False
+
+
+    
 class ListaBotonesOpcion(ListaBotones):
     def __init__(self):
         super().__init__("opcion")
-    
-    def get_opcion(self, index):
-        for btn in self.botones:
-            if btn == self.botones[index]:
-                btn.select = True
-            else:
-                btn.select = False
-        return str(self.botones[index].value).lower()
+        self.__opcion = ""
+        self.canSelect = True
 
+    def get_opcion(self):
+        return self.__opcion
+
+    def isClick(self, event):
+        if event.type == pygame.MOUSEBUTTONUP and self.canSelect:
+            for btn in self.botones:
+                if btn.borde.collidepoint(event.pos):
+                    if btn.select:
+                        btn.select = False
+                        self.__opcion = ""
+
+                    else:
+                        self.default()
+                        btn.select = True
+                        self.__opcion = str(btn.value)
+                    return True
+
+    def default(self):
+        self.__opcion = ""
+        for btn in self.botones:
+            btn.select = False

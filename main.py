@@ -5,15 +5,12 @@ from boton import *
 from textos import *
 from apuesta import Apuesta, ListaApuestas
 from jugador import Jugador
+from utils import *
 
 #? INICIALIZAMOS LAS CLASES QUE USAREMOS
 jugador = Jugador(1000)
 ruleta = Ruleta()
-apuestas = ListaApuestas([
-    Apuesta(jugador,"pleno", 300, 5),
-    Apuesta(jugador,"pleno", 300, 6),
-    Apuesta(jugador,"color", 100,  "rojo")
-])
+apuestas = ListaApuestas()
 
 #? CONFIGURAMOS LA INTERFAZ PYGAME
 pygame.init()
@@ -28,75 +25,73 @@ fuente = pygame.font.Font("fonts/GeneralSans-SemiBold.ttf", 15)
 flecha = pygame.image.load("assets/flecha.png").convert_alpha()
 imagen = pygame.image.load("assets/ruleta.png").convert_alpha()
 
-#? BOTON DE GIRO
-btn_giro = Boton(799, 433, 175, 36, "GIRAR / PARAR", type="bool")
+#? TEXTOS (TITULOS)
+titulo1 = Texto("PANEL APUESTA", pantalla, "white", 30, True)
+
+#? BOTON DE GIRO Y APUESTA
+btn_giro = Boton(210, 602, 220, 45, "GIRAR / PARAR", type="bool")
+btn_apuesta = Boton(920, 378, 220, 45, "APOSTAR")
 
 #? BOTONES DE LAS CASILLAS
 
-botonesCasillas = ListaBotonesSelect()
-
-x,y=0,0
-posCasillas = (98, 530)
-w,h,gap=40,36,5
-for btn in CASILLAS:
-    if btn != None:
-        color = VERDE if btn[1]=="verde" else NEGRO if btn[1]=="negro" else ROJO
-        botonesCasillas.add(
-            Boton(
-                posCasillas[0]+(w+gap)*x,
-                posCasillas[1]+(h+gap)*y, 
-                w, h, btn[0], color, 18, "white", hover=False
-            )
-        )
-    x+=1
-    if x==10:
-        y+=1
-        x=0
+botonesCasillas = ListaBotonesSelect(6)
+botonesCasillas.add(Boton(605, 150, 40, 57, "00", VERDE, 17, "white", False, type="btn"))
+botonesCasillas.add(Boton(605, 212, 40, 57, "0", VERDE, 17, "white", False, type="btn"))
+botonesCasillas.add(PanelCasillas(CASILLAS))
 
 #? BOTONES DE ACCION (TIPOS DE APUESTA)
 botonesApuesta = ListaBotonesOpcion()
-textBotones = ["PLENO", "DIVIDIDA", "CALLE", "SEISENA", "DOCENA", "PAR", "IMPAR", "ALTO", "BAJO", "APOSTAR"]
-x,y=0,0
-w,h,gap=85,36,5
-for btn in textBotones:
-    botonesApuesta.add(Boton(529+(w+gap)*x, 220+(h+gap)*y, w, h, btn))
-    x+=1
-    if x==5:
-        y+=1
-        x=0
+botonesApuesta.add(Boton(1190, 150, 40, 36, "x2", value="C3"))
+botonesApuesta.add(Boton(1190, 191, 40, 36, "x2", value="C2"))
+botonesApuesta.add(Boton(1190, 232, 40, 36, "x2", value="C1"))
+botonesApuesta.add(PanelApuestas())
 
 #? BOTONES DE SUMA DE CANTIDAD DE DINERO
 botonesCantidad = ListaBotones()
-x,y=0,0
-w,h,gap=40,36,5
-t_cantidad = [10, 100, 1000, 50, 500, "DEL"]
-for btn in t_cantidad:
-    botonesCantidad.add(Boton(844+(w+gap)*x, 130+(h+gap)*y, w, h, btn))
-    x+=1
-    if x==3:
-        y+=1
-        x=0
-botonesCantidad.botones[5].color_normal = NEGRO
-botonesCantidad.botones[5].color_texto = "white"
+botonesCantidad.add(PanelMonto())
 
 #? CUADRO DE TEXTO
-cuadroMonto = CuadroTxt(844, 89, 130, 36, 0, VERDE, 20, "white")
+cuadroDinero = CuadroTxt(605, 367, 220, 77, 0, NEGRO, 20, "white", label="TU DINERO:")
+cuadroMonto = CuadroTxt(605, 449, 220, 77, 0, BLANCO, 20, label="MONTO APUESTA:")
+
 log = []
-opcion = None
 selected = []
 
-def handleBtnGiro():
-    ruleta.turn = ruleta.isStop
-    ruleta.isGetCasilla = False
-    log.clear()
-    btn_giro.value = ruleta.isStop
-    if ruleta.isStop:
-        ruleta.rondas += 1
+#? CUARDRO DE REGISTROD DE APUESTAS 
+label = Texto("APUESTAS ACTIVAS: 10", pantalla, bld=True)
+rect = pygame.rect.Rect(830, 450, 400, 200)
 
+
+def handleBtnGiro():
+    if len(apuestas) != 0:
+        ruleta.turn = ruleta.isStop
+        ruleta.isGetCasilla = False
+        btn_giro.value = ruleta.isStop
+        if ruleta.isStop:
+            ruleta.rondas += 1
+
+def handleBtnApostar():
+    betAmount = cuadroMonto.get()
+    betType = botonesApuesta.get_opcion()
+    selected = botonesCasillas.get_selects()
+    if betAmount and (betType or selected):
+        if len(apuestas) == 0:
+            log.clear()
+        if len(log) < 8:
+            cuadroMonto.default()
+            botonesApuesta.default()
+            botonesCasillas.default()
+            apuesta = crearApuesta(jugador, betAmount, betType, selected)
+            apuestas.add(apuesta)
+            log.append(Texto(
+                str(apuesta),
+                pantalla, bld=True
+            ))
 
 #? BUCLE DEL JUEGO
 while juego:
     for event in pygame.event.get():
+        #? EVENTOS GENERALES (MOUSE, TECLADO, ETC...)
         if event.type == pygame.QUIT:
             juego = False
 
@@ -105,48 +100,30 @@ while juego:
             if btn.isClick(event):
                 if btn.value == "DEL":
                     cuadroMonto.pop_mem()
+                elif btn.value == "C":
+                    cuadroMonto.default()
                 else:
                     cuadroMonto.add_mem(btn.value)
         
         #? EVENTO DE LOS BOTONES DE CASILLA
-        for btn in botonesCasillas.get():
-            if btn.isClick(event):
-                pass
+        if botonesCasillas.isClick(event):
+            botonesApuesta.default()
 
         #? EVENTO DE CLICK EN LOS BOTONES DE APUESTA
-        for btn in botonesApuesta.get():
-            if btn.isClick(event):
-                if btn.value == "APOSTAR":
-                    selected = botonesCasillas.get_selects()
-
-                    #? CONVIERTO LOS VALORES DE SELECT A ENTEROS
-                    selected = [int(x) for x in selected]
-                    if (not opcion == None) and len(selected)>0 and int(cuadroMonto.txt)>0:
-                        
-                        #? AGREGAR APUESTA
-                        print(f"{opcion} -> {selected} -> {cuadroMonto.txt}")
-                        
-                        #? DESPUES DE AGREGAR APUESTA - VALORES POR DEFECTO
-                        opcion = None
-                        botonesCasillas.default()
-                        botonesApuesta.default()
-                        cuadroMonto.default()
-                else:
-                    id_btn = botonesApuesta.get().index(btn)
-                    opcion = botonesApuesta.get_opcion(id_btn)
+        if botonesApuesta.isClick(event):
+            botonesCasillas.default()
 
         #? EVENTO DE CLICK EN EL BOTON DE GIRAR/PARAR
         if btn_giro.isClick(event):
             handleBtnGiro()
+
+        #? EVENTO DE CLICK EN EL BOTON APOSTAR
+        if btn_apuesta.isClick(event):
+            handleBtnApostar()
             
 
     #? COLOR DE FONDO DE PANTALLA
     pantalla.fill(FONDO)
-    pygame.draw.rect(pantalla, NEGRO, (640, 0, 640, 720))
-
-    #? CUADRADO DE LOG
-    rect = pygame.rect.Rect(529, 45, 305, 162)
-    pygame.draw.rect(pantalla, "white", rect)
 
     #? MOSTRAR RULETA
     ruleta.show(imagen, flecha, pantalla)
@@ -157,38 +134,29 @@ while juego:
     #todo CONTROLADOR PARA CUANDO LA RULETA SE DETIENE
     if ruleta.isStop and ruleta.rondas != 0 and len(apuestas) > 0 and not ruleta.isGetCasilla:
         result = ruleta.get_casilla()
-        print(result)
-        for apuesta in apuestas:
+        for i in range(len(apuestas.apuestas)):
+            apuesta = apuestas[i]
             if not apuesta.pagada:
-                if apuesta.verificar_g(result):
-                    pago = apuesta.pagar()
-                    log.append(Texto(f"+ {pago} fichas, por apuesta tipo {apuesta.tipo}", pantalla, VERDE))
-                else:
-                    log.append(Texto(f"\tPerdiste la apuesta tipo {apuesta.tipo}", pantalla, ROJO))
+                apuesta.pagarApuesta(result)
+                color = VERDE if apuesta.isWin else ROJO
+                log[i].color = color
+        apuestas.clear()
 
-    #? INICIALIZAMOS LOS TEXTOS
-    txtPruebas = [
-        fuente.render(f"Angulo: {ruleta.ang:.2f}", True, "white"),
-        fuente.render(f"Velocidad: {ruleta.vel:.2f}", True, "white"),
-        fuente.render(f"Aceleración: {ruleta.acc}", True, "white"),
-        fuente.render(f"Dinero: {jugador.dinero}", True, "white")
-    ]
+    #! RENDERIZADO RECTANGULO
+    pygame.draw.rect(pantalla, "white", rect)
+    label.msg = f"APUESTAS ACTIVAS: {len(apuestas)}"
+    label.mostrar((845, 461))
 
-    #! RENDERIZADO DE TEXTOS DEL REGISTRO
-    y = 50
-    for t in range(len(log)):
-        log[t].mostrar((529, y+(t*15)))
+    #! RENDERIZADO DE TITULOS
+    titulo1.mostrar((786, 65))
 
-    #! RENDERIZADO DE TEXTOS DE PRUEBA (ANGULO,VELOCIDAD,ACELERACION)
-    x = 10 ; y = 10
-    for t in range(len(txtPruebas)):
-        pantalla.blit(txtPruebas[t], (x,y+(t*16)))
-
-    #! RENDERIZADO DEL CUADRO DE TEXTO
+    #! RENDERIZADO DEL CUADRO DE MONTO-APUESTA Y DINERO DE JUGADOR
     cuadroMonto.mostrar(pantalla)
+    cuadroDinero.mostrar(pantalla, jugador.dinero)
     
-    #! RENDERIZADO DE BOTON DE GIRO
+    #! RENDERIZADO DE BOTON DE GIRO/APOSTAR
     btn_giro.dibujar(pantalla)
+    btn_apuesta.dibujar(pantalla)
 
     #! RENDERIZADO DE BOTONES (CANTIDAD)
     botonesCantidad.dibujar(pantalla)
@@ -197,10 +165,14 @@ while juego:
     #! RENDERIZADO DE BOTONES (CASILLA)
     botonesCasillas.dibujar(pantalla)
 
+    #! RENDERIZADO DE REGISTRO DE APUESTAS
+    gap, x = 18, 0
+    for l in log:
+        l.mostrar((845, 482+(gap*x)))
+        x+=1
+
     #? ACTUALIZACION DE LA PANTALLA
     pygame.display.flip()
     reloj.tick(60)
-
-    
 
 pygame.quit()
