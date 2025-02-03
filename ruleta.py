@@ -30,19 +30,21 @@ class Ruleta:
             (2,  "negro")
         ]
 
+
+
     def show(self, imagen, flecha, display):
-        posRuleta = (320, 270)
+        posRuleta = (320, 290)
 
         ruletaRotada = pygame.transform.rotate(imagen, self.ang)
         cuadroRuleta = ruletaRotada.get_rect(center=posRuleta)
         display.blit(ruletaRotada, cuadroRuleta.topleft)
-        posFlecha = (305, 19)
+        posFlecha = (305, 40)
         display.blit(flecha, posFlecha)
 
     def move(self):
         if self.turn:
             if self.vel < 10:
-                self.vel += self.acc        
+                self.vel += self.acc
         else:
             if self.vel > 0.1:
                 self.vel *= .98

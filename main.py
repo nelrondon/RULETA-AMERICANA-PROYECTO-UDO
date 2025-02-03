@@ -20,10 +20,18 @@ reloj = pygame.time.Clock()
 juego = True
 pygame.display.set_caption("RULETA (AMERICANA) - CASINO")
 
-#? CARGAMOS LA FUENTE A USAR & LA IMAGEN DE LA RULETA
+#? CARGAMOS LA FUENTE A USAR & LA IMAGEN Y SONIDO DE LA RULETA
 fuente = pygame.font.Font("fonts/GeneralSans-SemiBold.ttf", 15)
 flecha = pygame.image.load("assets/flecha.png").convert_alpha()
 imagen = pygame.image.load("assets/ruleta.png").convert_alpha()
+spin_up = pygame.mixer.Sound("assets/spin_up.wav")
+spin_down = pygame.mixer.Sound("assets/spin_down_01.wav")
+
+
+#? MUSICA DE FONDO
+pygame.mixer.music.load("assets/casino.wav")
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play(loops=-1)
 
 #? TEXTOS (TITULOS)
 titulo1 = Texto("PANEL APUESTA", pantalla, "white", 30, True)
@@ -69,6 +77,12 @@ def handleBtnGiro():
         btn_giro.value = ruleta.isStop
         if ruleta.isStop:
             ruleta.rondas += 1
+        
+        if ruleta.turn and ruleta.isStop:
+            spin_up.play(loops=-1)
+        else:
+            spin_down.play()
+            spin_up.stop()
 
 def handleBtnApostar():
     betAmount = cuadroMonto.get()
