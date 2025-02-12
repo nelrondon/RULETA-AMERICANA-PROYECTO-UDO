@@ -3,7 +3,7 @@ import pygame
 class Ruleta:
     def __init__(self):
         # CONSTANTES
-        self.ACC = 0.08
+        self.ACC = 0.5
 
         # VARIABLES
         self.vel = 0
@@ -15,6 +15,7 @@ class Ruleta:
         self.isStop = False
         self.isGetCasilla = False
         self.rondas = 0
+        self.size = 360/38
 
         self.casillas = [
             (0,  "verde"),
@@ -58,8 +59,7 @@ class Ruleta:
             self.ang = 0
 
     def get_casilla(self):
-        sizeCasilla = 360 / 38
-        pos = round(self.ang/sizeCasilla)
+        pos = round(self.ang/self.size)
         pos = 0 if pos==38 else pos 
 
         self.isGetCasilla = True
