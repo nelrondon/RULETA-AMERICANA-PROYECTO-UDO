@@ -2,13 +2,16 @@ import pygame
 
 class Ruleta:
     def __init__(self):
+        pygame.init()
         # CONSTANTES
-        self.ACC = 0.5
+        self.ACC = 0.8
+        self.click = pygame.mixer.Sound("assets/click.wav")
 
         # VARIABLES
         self.vel = 0
         self.acc = self.ACC
         self.ang = 0
+        self.posCas = 0
 
         # ESTADOS
         self.turn = False
@@ -31,7 +34,8 @@ class Ruleta:
             (2,  "negro")
         ]
 
-
+    def play(self):
+        self.click.play()
 
     def show(self, imagen, flecha, display):
         posRuleta = (320, 290)
@@ -44,9 +48,17 @@ class Ruleta:
 
     def move(self):
         if self.turn:
-            if self.vel < 10:
+            if self.vel < 8:
                 self.vel += self.acc
         else:
+            pos = self.get_pos()
+            #! DETERMINAMOS EL CAMBIO DE UNA CASILLA A OTRA
+            if pos != self.posCas:
+                self.posCas = pos
+                if self.vel < 1.1:
+                    self.play()
+                    pass
+
             if self.vel > 0.1:
                 self.vel *= .98
             else:
@@ -58,10 +70,18 @@ class Ruleta:
         if self.ang >= 360:
             self.ang = 0
 
-    def get_casilla(self):
+    def get_pos(self):
         pos = round(self.ang/self.size)
-        pos = 0 if pos==38 else pos 
+        pos = 0 if pos==38 else pos
+        return pos
 
+    def get_casilla(self):
+        pos = self.get_pos()
+        self.posCas = pos
         self.isGetCasilla = True
         return self.casillas[pos]
-        
+    
+r = Ruleta()
+r.ang = 36
+
+print(r.get_casilla(), r.posCas)

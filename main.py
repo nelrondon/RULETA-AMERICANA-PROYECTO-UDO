@@ -22,14 +22,14 @@ pygame.display.set_caption("RULETA (AMERICANA) - CASINO")
 
 #? ESTADOS DE PANTALLA 
 # juego, portada, instrucciones
-displayState = "portada"
+displayState = "juego"
 
 #? CARGAMOS LA FUENTE A USAR & LA IMAGEN Y SONIDO DE LA RULETA
 fuente = pygame.font.Font("fonts/GeneralSans-SemiBold.ttf", 15)
 flecha = pygame.image.load("assets/flecha.png").convert_alpha()
 imagen = pygame.image.load("assets/ruleta.png").convert_alpha()
 spin_up = pygame.mixer.Sound("assets/spin_up.wav")
-spin_down = pygame.mixer.Sound("assets/spin_down_01.wav")
+spin_down = pygame.mixer.Sound("assets/spin_down.wav")
 
 fondo = pygame.image.load("assets/fondo.png").convert()
 instr = pygame.image.load("assets/instrucciones.png").convert()
