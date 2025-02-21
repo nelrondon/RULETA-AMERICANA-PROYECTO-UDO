@@ -22,7 +22,7 @@ pygame.display.set_caption("RULETA (AMERICANA) - CASINO")
 
 #? ESTADOS DE PANTALLA 
 # juego, portada, instrucciones
-displayState = "juego"
+displayState = "portada"
 
 #? CARGAMOS LA FUENTE A USAR & LA IMAGEN Y SONIDO DE LA RULETA
 fuente = pygame.font.Font("fonts/GeneralSans-SemiBold.ttf", 15)

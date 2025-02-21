@@ -34,12 +34,8 @@ class Ruleta:
             (2,  "negro")
         ]
 
-    def play(self):
-        self.click.play()
-
     def show(self, imagen, flecha, display):
         posRuleta = (320, 290)
-
         ruletaRotada = pygame.transform.rotate(imagen, self.ang)
         cuadroRuleta = ruletaRotada.get_rect(center=posRuleta)
         display.blit(ruletaRotada, cuadroRuleta.topleft)
@@ -56,8 +52,7 @@ class Ruleta:
             if pos != self.posCas:
                 self.posCas = pos
                 if self.vel < 1.1:
-                    self.play()
-                    pass
+                    self.click.play()
 
             if self.vel > 0.1:
                 self.vel *= .98
@@ -80,8 +75,3 @@ class Ruleta:
         self.posCas = pos
         self.isGetCasilla = True
         return self.casillas[pos]
-    
-r = Ruleta()
-r.ang = 36
-
-print(r.get_casilla(), r.posCas)
